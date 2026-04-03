@@ -45,8 +45,12 @@ const GraphVisualization = ({ nodes, edges }) => {
 
             ctx.clearRect(0, 0, width, height);
 
-            // Find max pheromone to normalize thickness
-            const maxPheromone = Math.max(0.001, ...edges.map(e => e.pheromone));
+            // Find max pheromone across both current and previous frames to accurately normalize thickness
+            const maxPheromone = Math.max(
+                0.001, 
+                ...edges.map(e => e.pheromone),
+                ...prevEdges.map(e => e.pheromone)
+            );
 
             // 1. Draw edges
             edges.forEach((targetEdge) => {
