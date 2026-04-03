@@ -1,0 +1,10 @@
+node_modules/
+__pycache__/
+*.pyc
+.env
+venv/
+env/
+compute/build/
+compute/bin/
+*.exe
+.DS_Store
