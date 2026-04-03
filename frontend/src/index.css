@@ -1,20 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* Premium Bento Grid Aesthetic - 2025 Trends */
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
 
 :root {
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --bg-color: #f8fafc;
-  --surface-color: #ffffff;
-  --text-main: #1e293b;
-  --text-muted: #64748b;
-  --border-color: #e2e8f0;
-  
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  
-  color: var(--text-main);
-  background-color: var(--bg-color);
+  --bg-color: #f1f0ee; /* Sophisticated off-white */
+  --surface: #ffffff;
+  --text-main: #141414;
+  --text-muted: #666666;
+  --accent: #ff4d00; /* Vibrant modern vermilion */
+  --accent-light: #fff0eb;
+  --border-color: #e0e0de;
+  --border-radius: 20px;
+  --font-serif: 'DM Serif Display', serif;
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 * {
@@ -27,4 +25,13 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Base Typo */
+h1, h2, h3 {
+  font-weight: 500;
 }
