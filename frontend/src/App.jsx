@@ -31,10 +31,11 @@ function App() {
           const data = await response.json();
           
           if(data.data.mocked) {
-             setStatus(`Success (Using Mocked Data - CUDA backend not found)`);
+             setStatus(`Success (Using Mocked Data - ${data.data.message || 'CUDA backend not found'})`);
              setEdges(data.data.edges);
           } else {
-             setStatus("Success! CUDA results received.");
+             setStatus(`Success! Numba CUDA results received.`);
+             setEdges(data.data.edges);
           }
       } catch (error) {
           console.error("Error running optimization:", error);
