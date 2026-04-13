@@ -123,21 +123,27 @@ def format_edges(distances, pheromone_matrix, num_nodes):
                 })
     return edges
 
-def run_optimization():
-    num_nodes = 5
+def run_optimization(num_nodes=5, edges_data=None, start_node=0, dest_node=4):
     num_ants = 32
     iterations = 100
-    start_node = 0
-    dest_node = 4
     
-    # Dense distance matrix setup
+    # Build dense distance matrix from edge list
     distances = np.full((num_nodes, num_nodes), -1.0, dtype=np.float32)
-    distances[0, 1] = 10.0
-    distances[0, 2] = 5.0
-    distances[1, 3] = 10.0
-    distances[2, 3] = 20.0
-    distances[2, 1] = 2.0
-    distances[3, 4] = 5.0
+    
+    if edges_data and len(edges_data) > 0:
+        for edge in edges_data:
+            src = edge.get('from', 0)
+            dst = edge.get('to', 0)
+            w = float(edge.get('weight', 1.0))
+            distances[src, dst] = w
+    else:
+        # Default fallback graph
+        distances[0, 1] = 10.0
+        distances[0, 2] = 5.0
+        distances[1, 3] = 10.0
+        distances[2, 3] = 20.0
+        distances[2, 1] = 2.0
+        distances[3, 4] = 5.0
 
     try:
         # Remove explicit cuda.is_available() check which can give false negatives

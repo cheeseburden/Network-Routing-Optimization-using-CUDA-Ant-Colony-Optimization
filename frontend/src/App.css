@@ -93,6 +93,78 @@
   justify-content: center;
 }
 
+/* Topology Selector */
+.topology-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed var(--border-color);
+}
+
+.topology-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.topology-chips {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  flex: 1;
+}
+
+.topology-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 50px;
+  border: 1.5px solid var(--border-color);
+  background: var(--surface);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.topology-chip:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+  transform: translateY(-1px);
+}
+
+.topology-chip.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 2px 8px rgba(255, 77, 0, 0.25);
+}
+
+.topology-chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.topology-chip-icon {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.topology-chip-name {
+  line-height: 1;
+}
+
 /* Optimal Path Bar - Enhanced */
 .path-display-bar {
   background: var(--bg-color);

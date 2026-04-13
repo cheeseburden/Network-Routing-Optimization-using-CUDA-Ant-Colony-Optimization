@@ -8,3 +8,16 @@ compute/build/
 compute/bin/
 *.exe
 .DS_Store
+
+# Backend runtime artifacts
+backend/err.txt
+backend/err_numba.txt
+backend/out.txt
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db

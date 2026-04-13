@@ -2,40 +2,47 @@ import React, { useState, useEffect } from 'react';
 import GraphVisualization from './components/GraphVisualization';
 import Controls from './components/Controls';
 import AlgorithmExplanation from './components/AlgorithmExplanation';
+import TopologySelector, { TOPOLOGIES } from './components/TopologySelector';
 import './App.css';
 
 function App() {
-  const [nodes, setNodes] = useState([
-      { id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }
-  ]);
-  
-  const [edges, setEdges] = useState([
-      { from: 0, to: 1, pheromone: 0.1, weight: 10 },
-      { from: 0, to: 2, pheromone: 0.1, weight: 5 },
-      { from: 1, to: 3, pheromone: 0.1, weight: 10 },
-      { from: 2, to: 3, pheromone: 0.1, weight: 20 },
-      { from: 2, to: 1, pheromone: 0.1, weight: 2 },
-      { from: 3, to: 4, pheromone: 0.1, weight: 5 }
-  ]);
+  const [topologyKey, setTopologyKey] = useState('default');
+  const topology = TOPOLOGIES[topologyKey];
+
+  const [nodes, setNodes] = useState(topology.nodes);
+  const [edges, setEdges] = useState(
+      topology.edges.map(e => ({ ...e, pheromone: 0.1 }))
+  );
+  const [startNode, setStartNode] = useState(topology.startNode);
+  const [destNode, setDestNode] = useState(topology.destNode);
 
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("Awaiting optimization initialization.");
   const [iteration, setIteration] = useState(0);
   const [optimalPath, setOptimalPath] = useState([]);
+  const [showPackets, setShowPackets] = useState(false);
+
+  const handleTopologyChange = (key, topo) => {
+      setTopologyKey(key);
+      setNodes(topo.nodes);
+      setEdges(topo.edges.map(e => ({ ...e, pheromone: 0.1 })));
+      setStartNode(topo.startNode);
+      setDestNode(topo.destNode);
+      setIteration(0);
+      setShowPackets(false);
+      setStatus("Awaiting optimization initialization.");
+  };
 
   // Dynamically trace the path with highest pheromones from start to end
   useEffect(() => {
-    let current = 0;
-    const dest = 4;
-    const path = [0];
-    const visited = new Set([0]);
+    let current = startNode;
+    const path = [startNode];
+    const visited = new Set([startNode]);
 
-    while (current !== dest && path.length < nodes.length) {
-       // get all outgoing edges from current
+    while (current !== destNode && path.length < nodes.length) {
        const outgoing = edges.filter(e => e.from === current && !visited.has(e.to));
        if (outgoing.length === 0) break;
        
-       // pick the edge with max pheromone
        const bestEdge = outgoing.reduce((max, e) => (e.pheromone > max.pheromone ? e : max), outgoing[0]);
        
        current = bestEdge.to;
@@ -43,9 +50,10 @@ function App() {
        visited.add(current);
     }
     setOptimalPath(path);
-  }, [edges, nodes.length]);
+  }, [edges, nodes.length, startNode, destNode]);
 
   const animateSnapshots = (snapshots) => {
+      setShowPackets(false);
       let currentFrame = 0;
       
       const interval = setInterval(() => {
@@ -56,6 +64,7 @@ function App() {
           } else {
               clearInterval(interval);
               setLoading(false);
+              setShowPackets(true); // Enable packet animation after optimization
           }
       }, 700); 
   };
@@ -63,16 +72,24 @@ function App() {
   const handleOptimize = async () => {
       setLoading(true);
       setIteration(0);
+      setShowPackets(false);
       setStatus("Computing algorithmic iterations in native Engine...");
       try {
+          const topo = TOPOLOGIES[topologyKey];
           const response = await fetch('http://localhost:8000/optimize', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' }
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                  num_nodes: topo.nodes.length,
+                  edges: topo.edges.map(e => ({ from: e.from, to: e.to, weight: e.weight })),
+                  start_node: topo.startNode,
+                  dest_node: topo.destNode,
+              })
           });
           const data = await response.json();
           
           if(data.data.snapshots && data.data.snapshots.length > 0) {
-             setStatus(data.data.message);
+             setStatus("Optimization complete.");
              animateSnapshots(data.data.snapshots);
           } else {
              setStatus("Error: No snapshots received.");
@@ -101,13 +118,20 @@ function App() {
                 <h2>Network Topography</h2>
                 <span className="iteration-badge">{iteration}% Iterated</span>
             </div>
+            <TopologySelector current={topologyKey} onSelect={handleTopologyChange} disabled={loading} />
             <div className="graph-container">
-                <GraphVisualization nodes={nodes} edges={edges} />
+                <GraphVisualization 
+                    nodes={nodes} 
+                    edges={edges} 
+                    optimalPath={optimalPath} 
+                    animatePackets={showPackets}
+                    layout={TOPOLOGIES[topologyKey].layout || 'circular'}
+                />
             </div>
             <div className="path-display-bar">
                 <div className="path-header">
                     <h3>Dominant Route Traversal</h3>
-                    {optimalPath[optimalPath.length-1] === 4 
+                    {optimalPath[optimalPath.length-1] === destNode 
                         ? <span className="path-badge path-badge-success">✓ Destination Reached</span>
                         : <span className="path-badge path-badge-failed">✗ Search Diverged</span>
                     }

@@ -1,42 +1,181 @@
-# Network Routing Optimization using Python/Numba CUDA
+# NetOptima — Network Routing Optimization using CUDA Ant Colony Optimization
 
-A comprehensive project for calculating optimal networking routes through graph traversal using a CUDA-accelerated Ant Colony Optimization algorithm, built directly in Python and orchestrated by a FastAPI server, visualized in a React dashboard.
+A real-time network routing optimization dashboard that uses **CUDA-accelerated Ant Colony Optimization (ACO)** to find optimal paths across various network topologies. Built with a Python/Numba GPU backend and a React visualization frontend.
 
-## No C++ Environment Needed!
-By pivoting our architecture, we successfully bypassed Microsoft Visual Studio and CMake requirements. The system compiles the GPU calculations on-the-fly (`JIT` compilation) using the simple Python `numba` library! 
+---
 
-**Mock Mode**
-Even without the NVIDIA drivers/GPU properly installed, the backend server will automatically catch any compilation errors and return realistic mock routing data so that you can view the dashboard and see the visualization.
+## Features
 
-## Instructions to Run (PowerShell Compatible)
+- **GPU-Accelerated ACO** — Ant Colony Optimization compiled and executed on NVIDIA GPUs via Numba CUDA JIT. Falls back to CPU automatically if no GPU is available.
+- **Multiple Network Topologies** — Choose from 6 preset topologies: Default, Star, Ring, Mesh, Tree, and Linear (Bus).
+- **Real-Time Visualization** — Watch pheromone levels evolve across the network as the algorithm converges on the optimal route.
+- **Animated Packet Simulation** — After optimization, glowing data packets animate along the discovered optimal path.
+- **Device-Aware Nodes** — Network nodes are rendered as real device icons (Router, Switch, Server, Firewall, Endpoint) instead of generic circles.
+- **Interactive Route Display** — The Dominant Route Traversal bar shows the optimized path with device-type icons and status indicators.
 
-We have two components. You can run them in separate PowerShell tabs.
+---
 
-### 1. Run the Backend API Server & CUDA Engine
-This acts as both the engine compiler and the API router.
+## Tech Stack
 
-Open a PowerShell terminal and run:
-```powershell
+| Layer      | Technology                         |
+|------------|------------------------------------|
+| GPU Kernel | Python / Numba CUDA JIT            |
+| Backend    | FastAPI + Uvicorn                   |
+| Frontend   | React (Vite) + Canvas API          |
+| Styling    | Vanilla CSS (Bento Grid aesthetic)  |
+
+---
+
+## Project Structure
+
+```
+├── backend/
+│   ├── app/
+│   │   ├── main.py          # FastAPI server — /optimize endpoint
+│   │   └── runner.py         # ACO algorithm (CUDA kernels + CPU fallback)
+│   └── requirements.txt      # Python dependencies
+├── frontend/
+│   ├── public/
+│   │   └── favicon.svg       # App favicon
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── AlgorithmExplanation.jsx   # Math formulas panel
+│   │   │   ├── Controls.jsx               # Optimization controls
+│   │   │   ├── GraphVisualization.jsx      # Canvas graph + packet animation
+│   │   │   └── TopologySelector.jsx        # Preset topology chooser
+│   │   ├── App.jsx           # Main application component
+│   │   ├── App.css           # Application styles
+│   │   ├── index.css         # Global styles & design tokens
+│   │   └── main.jsx          # React entry point
+│   ├── index.html            # HTML shell
+│   ├── package.json          # Node dependencies
+│   └── vite.config.js        # Vite build configuration
+├── .gitignore
+└── README.md
+```
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- **Python 3.9+**
+- **Node.js 18+**
+- *(Optional)* NVIDIA GPU with CUDA Toolkit for GPU acceleration
+
+### 1. Backend
+
+```bash
 cd backend
 pip install -r requirements.txt
 python -m uvicorn app.main:app --port 8000
 ```
-This will start the API at `http://127.0.0.1:8000`.
 
-### 2. Run the Frontend Dashboard
-This is the modern corporate-styled visualization UI.
+The API will start at `http://localhost:8000`.
 
-Open a new, separate PowerShell terminal and run:
-```powershell
+### 2. Frontend
+
+```bash
 cd frontend
+npm install
 npm run dev
 ```
-Navigate your browser to `http://localhost:5173/` to see the application!
 
-## Application Explanation
-This dashboard visualizes **Ant Colony Optimization (ACO)**. 
-- Nodes (circles) represent servers/routers in a network.
-- Edges (lines) represent the network cables connecting them, where `C: X` denotes the distance or latency cost.
-- As the algorithm runs, simulated "ants" traverse paths on the network.
-- The more optimal a path is, the more "Pheromone" is deposited by ants.
-- Over time, the most optimal route will light up vividly with thicker, more opaque lines, while sub-optimal routes fade away due to evaporation.
+Open `http://localhost:5173` in your browser.
+
+---
+
+## How It Works
+
+### Ant Colony Optimization (ACO)
+
+The algorithm simulates ant behavior to discover shortest paths in a weighted graph:
+
+1. **Initialization** — Pheromone levels on all edges are set to a small uniform value.
+2. **Solution Construction** — Each ant builds a path from source to destination using probabilistic selection weighted by pheromone and heuristic (inverse distance):
+
+   ```
+   P_ij = (τ_ij^α × η_ij^β) / Σ(τ^α × η^β)
+   ```
+
+3. **Pheromone Update** — Successful ants deposit pheromone proportional to path quality. All edges evaporate:
+
+   ```
+   τ_ij = (1 - ρ) × τ_ij + Δτ
+   ```
+
+4. **Convergence** — After 100 iterations, the highest-pheromone path represents the optimal route.
+
+### CUDA Acceleration
+
+- **`construct_solutions` kernel** — Each ant runs as a separate GPU thread, building paths in parallel.
+- **`update_pheromones` kernel** — 2D grid maps to the NxN pheromone matrix for parallel evaporation and deposit.
+- If no CUDA device is found, the system transparently falls back to an equivalent CPU implementation.
+
+---
+
+## API Reference
+
+### `POST /optimize`
+
+Runs ACO on the provided graph topology.
+
+**Request Body:**
+```json
+{
+  "num_nodes": 5,
+  "edges": [
+    { "from": 0, "to": 1, "weight": 10 },
+    { "from": 0, "to": 2, "weight": 5 }
+  ],
+  "start_node": 0,
+  "dest_node": 4
+}
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "data": {
+    "mocked": false,
+    "message": "Successfully executed using native Numba GPU kernels",
+    "snapshots": [ ... ]
+  }
+}
+```
+
+Each snapshot is an array of edge objects with updated pheromone values, sampled every 10 iterations.
+
+---
+
+## Available Topologies
+
+| Topology | Nodes | Description                          | Layout     |
+|----------|-------|--------------------------------------|------------|
+| Default  | 5     | Directed graph with asymmetric links | Circular   |
+| Star     | 6     | Central hub with spoke connections   | Circular   |
+| Ring     | 6     | Bidirectional circular chain         | Circular   |
+| Mesh     | 5     | Fully connected network              | Circular   |
+| Tree     | 7     | Hierarchical with cross-tree links   | Circular   |
+| Linear   | 5     | Sequential bus backbone              | Horizontal |
+
+---
+
+## Algorithm Parameters
+
+| Parameter        | Value | Description                              |
+|-----------------|-------|------------------------------------------|
+| `α` (Alpha)     | 1.0   | Pheromone influence weight               |
+| `β` (Beta)      | 2.0   | Heuristic (distance) influence weight    |
+| `ρ` (Rho)       | 0.5   | Evaporation rate per iteration           |
+| `Q`             | 100   | Pheromone deposit constant               |
+| Ants            | 32    | Number of parallel ant agents            |
+| Iterations      | 100   | Total optimization iterations            |
+
+---
+
+## License
+
+This project is developed for academic purposes as part of the 6th Semester coursework at BMSCE.
