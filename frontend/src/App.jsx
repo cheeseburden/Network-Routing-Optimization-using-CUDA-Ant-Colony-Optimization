@@ -105,16 +105,43 @@ function App() {
                 <GraphVisualization nodes={nodes} edges={edges} />
             </div>
             <div className="path-display-bar">
-                <h3>Dominant Route Traversal</h3>
-                <div className="path-sequence">
-                    {optimalPath.map((n, i) => (
-                        <React.Fragment key={i}>
-                            <span className="path-node">N{n}</span>
-                            {i < optimalPath.length - 1 && <span className="path-arrow">→</span>}
-                        </React.Fragment>
-                    ))}
-                    {optimalPath[optimalPath.length-1] !== 4 && <span className="path-status path-failed"> (Search Diverged)</span>}
-                    {optimalPath[optimalPath.length-1] === 4 && <span className="path-status path-success"> (Destination Reached)</span>}
+                <div className="path-header">
+                    <h3>Dominant Route Traversal</h3>
+                    {optimalPath[optimalPath.length-1] === 4 
+                        ? <span className="path-badge path-badge-success">✓ Destination Reached</span>
+                        : <span className="path-badge path-badge-failed">✗ Search Diverged</span>
+                    }
+                </div>
+                <div className="path-sequence-enhanced">
+                    {optimalPath.map((n, i) => {
+                        const deviceTypes = [
+                            { label: 'Router',   color: '#ff4d00', icon: '⬡' },
+                            { label: 'Switch',   color: '#3b82f6', icon: '⬢' },
+                            { label: 'Server',   color: '#8b5cf6', icon: '▣' },
+                            { label: 'Firewall', color: '#ef4444', icon: '◆' },
+                            { label: 'Endpoint', color: '#10b981', icon: '◉' },
+                        ];
+                        const device = deviceTypes[n % deviceTypes.length];
+                        return (
+                            <React.Fragment key={i}>
+                                <div className="path-device-node">
+                                    <div className="path-device-icon" style={{ borderColor: device.color, color: device.color }}>
+                                        <span className="path-device-symbol">{device.icon}</span>
+                                        <span className="path-device-id">N{n}</span>
+                                    </div>
+                                    <span className="path-device-label" style={{ color: device.color }}>{device.label}</span>
+                                </div>
+                                {i < optimalPath.length - 1 && (
+                                    <div className="path-connector">
+                                        <div className="path-connector-line"></div>
+                                        <svg width="12" height="12" viewBox="0 0 12 12" className="path-connector-arrow">
+                                            <path d="M2 6h8M7 3l3 3-3 3" stroke="#ff4d00" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
+                                    </div>
+                                )}
+                            </React.Fragment>
+                        );
+                    })}
                 </div>
             </div>
         </div>
