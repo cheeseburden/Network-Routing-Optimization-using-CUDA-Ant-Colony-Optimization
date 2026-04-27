@@ -7,6 +7,7 @@ A real-time network routing optimization dashboard that uses **CUDA-accelerated 
 ## Features
 
 - **GPU-Accelerated ACO** — Ant Colony Optimization compiled and executed on NVIDIA GPUs via Numba CUDA JIT. Falls back to CPU automatically if no GPU is available.
+- **Execution Engine Indicator** — A real-time UI badge prominently displays whether the backend executed using `⚡ GPU Accelerated` native kernels or `🖥️ CPU Fallback`.
 - **Multiple Network Topologies** — Choose from 6 preset topologies: Default, Star, Ring, Mesh, Tree, and Linear (Bus).
 - **Real-Time Visualization** — Watch pheromone levels evolve across the network as the algorithm converges on the optimal route.
 - **Animated Packet Simulation** — After optimization, glowing data packets animate along the discovered optimal path.
