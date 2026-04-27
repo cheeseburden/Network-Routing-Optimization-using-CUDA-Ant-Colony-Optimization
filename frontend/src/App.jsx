@@ -76,7 +76,7 @@ function App() {
       setStatus("Computing algorithmic iterations in native Engine...");
       try {
           const topo = TOPOLOGIES[topologyKey];
-          const response = await fetch('http://localhost:8000/optimize', {
+          const response = await fetch('/api/optimize', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({

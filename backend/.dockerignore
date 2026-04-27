@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+venv/
+env/
+.env
+err_numba.txt
+err.txt
+out.txt
+*.log
+.git/
+.gitignore

@@ -1,0 +1,35 @@
+# ─────────────────────────────────────────────────────────────
+# NetOptima — Docker Compose Stack
+# Backend:  CUDA-accelerated FastAPI (GPU passthrough)
+# Frontend: React served by Nginx (reverse-proxies /api)
+# ─────────────────────────────────────────────────────────────
+
+services:
+  backend:
+    build: ./backend
+    container_name: netoptima-backend
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build: ./frontend
+    container_name: netoptima-frontend
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy

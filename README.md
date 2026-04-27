@@ -58,7 +58,27 @@ A real-time network routing optimization dashboard that uses **CUDA-accelerated 
 
 ## Quick Start
 
-### Prerequisites
+### Option 1: Docker (Recommended)
+
+The easiest way to run the full stack (Frontend + Backend with GPU passthrough) is using Docker Compose.
+
+**Prerequisites:**
+- **Docker & Docker Compose**
+- **NVIDIA Container Toolkit** (required for CUDA acceleration in the container)
+
+```bash
+docker compose up --build
+```
+- The frontend will be available at `http://localhost:3000`
+- The backend API will be available at `http://localhost:8000`
+
+> **Note:** If you don't have an NVIDIA GPU or the toolkit installed, Docker will fail to allocate the GPU. You can edit `docker-compose.yml` to remove the `deploy.resources` block for the backend, and it will fall back to the CPU implementation.
+
+---
+
+### Option 2: Manual Setup
+
+**Prerequisites:**
 
 - **Python 3.9+**
 - **Node.js 18+**

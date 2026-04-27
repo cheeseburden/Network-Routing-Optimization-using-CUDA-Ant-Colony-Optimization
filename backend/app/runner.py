@@ -1,16 +1,36 @@
 import os
 import sys
+import platform
 
-if hasattr(os, 'add_dll_directory'):
-    try:
-        os.add_dll_directory(r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.2\nvvm\bin\x64")
-        os.add_dll_directory(r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.2\bin")
-    except Exception:
-        pass
-        
-os.environ["NUMBAPRO_NVVM"] = r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.2\nvvm\bin\x64\nvvm64_40_0.dll"
-os.environ["NUMBAPRO_LIBDEVICE"] = r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.2\nvvm\libdevice"
-os.environ['CUDA_HOME'] = r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.2"
+# ── Portable CUDA path setup ──────────────────────────────────────────
+# Docker (Linux): The nvidia/cuda base image already configures all paths.
+# Windows (local): Auto-detect from CUDA_PATH environment variable.
+if platform.system() == "Windows":
+    cuda_root = os.environ.get(
+        "CUDA_PATH",
+        r"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.2",
+    )
+    if os.path.isdir(cuda_root):
+        nvvm_bin = os.path.join(cuda_root, "nvvm", "bin", "x64")
+        cuda_bin = os.path.join(cuda_root, "bin")
+        libdevice = os.path.join(cuda_root, "nvvm", "libdevice")
+
+        if hasattr(os, "add_dll_directory"):
+            try:
+                os.add_dll_directory(nvvm_bin)
+                os.add_dll_directory(cuda_bin)
+            except Exception:
+                pass
+
+        # Locate the nvvm DLL dynamically
+        if os.path.isdir(nvvm_bin):
+            for f in os.listdir(nvvm_bin):
+                if f.startswith("nvvm64") and f.endswith(".dll"):
+                    os.environ.setdefault("NUMBAPRO_NVVM", os.path.join(nvvm_bin, f))
+                    break
+
+        os.environ.setdefault("NUMBAPRO_LIBDEVICE", libdevice)
+        os.environ.setdefault("CUDA_HOME", cuda_root)
 
 from numba import cuda, float32, int32
 import numpy as np
@@ -142,7 +162,7 @@ def run_optimization(num_nodes=5, edges_data=None, start_node=0, dest_node=4):
         distances[0, 2] = 5.0
         distances[1, 3] = 10.0
         distances[2, 3] = 20.0
-        distances[2, 1] = 2.0
+        distances[2, 1] = 1.0
         distances[3, 4] = 5.0
 
     try:

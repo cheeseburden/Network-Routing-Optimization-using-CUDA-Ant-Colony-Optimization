@@ -21,3 +21,6 @@ backend/out.txt
 
 # OS
 Thumbs.db
+
+# Docker
+docker-compose.override.yml
