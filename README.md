@@ -73,6 +73,11 @@ docker compose up --build
 - The frontend will be available at `http://localhost:3000`
 - The backend API will be available at `http://localhost:8000`
 
+**To stop the containers:**
+```bash
+docker compose down
+```
+
 > **Note:** If you don't have an NVIDIA GPU or the toolkit installed, Docker will fail to allocate the GPU. You can edit `docker-compose.yml` to remove the `deploy.resources` block for the backend, and it will fall back to the CPU implementation.
 
 ---
@@ -104,6 +109,9 @@ npm run dev
 ```
 
 Open `http://localhost:5173` in your browser.
+
+**To stop manual execution:**
+Press `Ctrl+C` in both terminal windows to gracefully shut down the FastAPI backend and the Vite dev server.
 
 ---
 
