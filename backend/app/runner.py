@@ -33,6 +33,7 @@ if platform.system() == "Windows":
         os.environ.setdefault("CUDA_HOME", cuda_root)
 
 from numba import cuda, float32, int32
+from numba.cuda.random import create_xoroshiro128p_states, xoroshiro128p_uniform_float32
 import numpy as np
 import random
 import copy
@@ -46,7 +47,7 @@ Q = 100.0
 @cuda.jit
 def construct_solutions(num_nodes, num_ants, start_node, dest_node, 
                         distances, pheromones, 
-                        paths, path_lengths, path_costs):
+                        paths, path_lengths, path_costs, rng_states):
     ant_id = cuda.grid(1)
     if ant_id >= num_ants:
         return
@@ -84,7 +85,7 @@ def construct_solutions(num_nodes, num_ants, start_node, dest_node,
             break
             
         # Roulette selection
-        rand_val = random.random() * total_prob
+        rand_val = xoroshiro128p_uniform_float32(rng_states, ant_id) * total_prob
         cumulative = 0.0
         next_node = dest_node
         
@@ -182,6 +183,9 @@ def run_optimization(num_nodes=5, edges_data=None, start_node=0, dest_node=4):
         threads_per_block = 256
         blocks_per_grid = (num_ants + threads_per_block - 1) // threads_per_block
         
+        # Initialize random states for CUDA kernel
+        rng_states = create_xoroshiro128p_states(threads_per_block * blocks_per_grid, seed=1)
+        
         phero_threads = (16, 16)
         phero_blocks = (
             (num_nodes + phero_threads[0] - 1) // phero_threads[0],
@@ -195,7 +199,7 @@ def run_optimization(num_nodes=5, edges_data=None, start_node=0, dest_node=4):
         for iter_count in range(1, iterations + 1):
             construct_solutions[blocks_per_grid, threads_per_block](
                 num_nodes, num_ants, start_node, dest_node,
-                d_distances, d_pheromones, d_paths, d_path_lengths, d_path_costs
+                d_distances, d_pheromones, d_paths, d_path_lengths, d_path_costs, rng_states
             )
             update_pheromones[phero_blocks, phero_threads](
                 num_nodes, num_ants, d_pheromones, d_paths, d_path_lengths, d_path_costs

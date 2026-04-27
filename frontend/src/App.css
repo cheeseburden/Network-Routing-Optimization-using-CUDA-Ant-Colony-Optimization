@@ -34,9 +34,31 @@
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--accent);
-  border: 1px solid var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.engine-badge {
   padding: 0.4rem 1rem;
   border-radius: 50px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.engine-cuda {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.engine-cpu {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .bento-grid {

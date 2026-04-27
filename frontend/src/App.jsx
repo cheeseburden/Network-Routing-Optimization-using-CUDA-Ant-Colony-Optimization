@@ -21,6 +21,7 @@ function App() {
   const [iteration, setIteration] = useState(0);
   const [optimalPath, setOptimalPath] = useState([]);
   const [showPackets, setShowPackets] = useState(false);
+  const [executionEngine, setExecutionEngine] = useState(null);
 
   const handleTopologyChange = (key, topo) => {
       setTopologyKey(key);
@@ -90,6 +91,15 @@ function App() {
           
           if(data.data.snapshots && data.data.snapshots.length > 0) {
              setStatus("Optimization complete.");
+             
+             if (data.data.message) {
+                 if (data.data.message.toLowerCase().includes('cpu')) {
+                     setExecutionEngine('CPU');
+                 } else if (data.data.message.toLowerCase().includes('numba gpu') || data.data.message.toLowerCase().includes('cuda')) {
+                     setExecutionEngine('CUDA');
+                 }
+             }
+
              animateSnapshots(data.data.snapshots);
           } else {
              setStatus("Error: No snapshots received.");
@@ -107,7 +117,14 @@ function App() {
     <div className="bento-dashboard">
       <nav className="bento-nav">
         <h1 className="logo">NET<span className="weight-light">OPTIMA</span></h1>
-        <div className="nav-subtitle">CUDA / Numba ACO Rendering Engine</div>
+        <div className="nav-subtitle">
+            CUDA / Numba ACO Rendering Engine
+            {executionEngine && (
+                <span className={`engine-badge engine-${executionEngine.toLowerCase()}`}>
+                    {executionEngine === 'CUDA' ? '⚡ GPU Accelerated' : '🖥️ CPU Fallback'}
+                </span>
+            )}
+        </div>
       </nav>
 
       <main className="bento-grid">
